@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 // MARK: - Estructuras
 struct Noticias: Codable {
     var articles: [Noticia]
@@ -14,12 +15,24 @@ struct Noticias: Codable {
 struct Noticia: Codable {
     var title: String?
     var description: String?
-    
+    var urlToImage: String?
+    var url: String
 }
 
 class NoticiasViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     var noticias = [Noticia]()
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print(noticias[indexPath.row].url)
+        
+        if let url = URL(string: noticias[indexPath.row].url){
+            let safariVC = SFSafariViewController(url: url)
+            
+            present(safariVC, animated: true, completion: nil)
+        }
+        
+    }
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -27,9 +40,28 @@ class NoticiasViewController: UIViewController, UITableViewDataSource, UITableVi
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let celda = tablaNoticias.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
-        celda.textLabel?.text = noticias[indexPath.row].title
-        celda.detailTextLabel?.text = noticias[indexPath.row].description
+        let celda = tablaNoticias.dequeueReusableCell(withIdentifier: "celda", for: indexPath) as! NoticiaCell
+        celda.tituloLabel.text = noticias[indexPath.row].title
+        celda.descripcionLabel.text = noticias[indexPath.row].description
+        
+        if let url = URL(string: noticias[indexPath.row].urlToImage ?? "https://cnnespanol.cnn.com/wp-content/uploads/2021/10/image008-1.jpg?quality=100&strip=info"){
+            
+            DispatchQueue.global().async { [weak self] in
+                
+                if let data = try? Data(contentsOf: url){
+                    //obj del tipo image a partir de una imagen
+                    if let image = UIImage(data: data){
+                        DispatchQueue.main.async {
+                            celda.imagenNoticiaImage.image = image
+                            //self?.imagenURLimage.image = image
+                        }
+                        }
+                    }
+                }
+            
+        }
+        
+        
         
         return celda
     }
@@ -38,7 +70,10 @@ class NoticiasViewController: UIViewController, UITableViewDataSource, UITableVi
     @IBOutlet weak var tablaNoticias: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        //Registar la nueva celda
+        tablaNoticias.register(UINib(nibName: "NoticiaCell", bundle: nil), forCellReuseIdentifier: "celda")
+        
         tablaNoticias.delegate = self
         tablaNoticias.dataSource = self
         

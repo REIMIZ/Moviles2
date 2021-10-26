@@ -28,6 +28,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //Registar la nueva celda
+        tablaJson.register(UINib(nibName: "NoticiaCell", bundle: nil), forCellReuseIdentifier: "celda")
+        
         // MARK: - TableView Methods
         tablaJson.delegate = self
         tablaJson.dataSource = self
@@ -60,9 +63,11 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let celda = tablaJson.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
-        celda.textLabel?.text = petitions[indexPath.row].title
-        celda.detailTextLabel?.text = petitions[indexPath.row].body
+        //castear el objeto celda
+        let celda = tablaJson.dequeueReusableCell(withIdentifier: "celda", for: indexPath) as! NoticiaCell
+        
+        celda.tituloLabel.text = petitions[indexPath.row].title
+        celda.descripcionLabel.text = petitions[indexPath.row].body
         return celda
     }
     
